@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Animated Totem Pack Creator — Tamilcrafters Studio</title>
+<style>
+  :root{
+    --bg1:#5b21b6;
+    --bg2:#0ea5e9;
+    --bg3:#ec4899;
+    --card:rgba(255,255,255,.14);
+    --line:rgba(255,255,255,.25);
+    --text:#fff;
+    --muted:rgba(255,255,255,.78);
+    --dark:#161122;
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0; min-height:100vh; color:var(--text);
+    font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
+    background:
+      radial-gradient(circle at 15% 15%,rgba(255,255,255,.20),transparent 22%),
+      radial-gradient(circle at 85% 20%,rgba(255,255,255,.16),transparent 20%),
+      radial-gradient(circle at 50% 90%,rgba(255,255,255,.14),transparent 25%),
+      linear-gradient(135deg,var(--bg1),var(--bg2) 52%,var(--bg3));
+    overflow-x:hidden;
+  }
+  .bubble{position:fixed;border-radius:50%;filter:blur(1px);opacity:.18;pointer-events:none}
+  .b1{width:190px;height:190px;background:#fff;left:-55px;top:110px}
+  .b2{width:250px;height:250px;background:#fde68a;right:-90px;top:38%}
+  .b3{width:130px;height:130px;background:#a7f3d0;left:12%;bottom:-45px}
+  .wrap{width:min(900px,92%);margin:auto;padding:28px 0 48px}
+  header{text-align:center;padding:18px 10px 24px}
+  .logo{
+    display:inline-flex;align-items:center;justify-content:center;
+    width:76px;height:76px;border-radius:28px;
+    background:rgba(255,255,255,.18);border:1px solid var(--line);
+    box-shadow:0 15px 40px rgba(0,0,0,.16);font-size:40px
+  }
+  h1{margin:12px 0 5px;font-size:clamp(28px,6vw,46px);line-height:1.05}
+  header p{margin:0;color:var(--muted);font-weight:600}
+  .card{
+    background:var(--card);backdrop-filter:blur(18px);
+    border:1px solid var(--line);border-radius:32px;
+    padding:22px;box-shadow:0 20px 70px rgba(0,0,0,.20);
+    margin-top:16px
+  }
+  label{display:block;font-weight:800;margin:4px 2px 8px}
+  input[type=text]{
+    width:100%;padding:15px 17px;border-radius:18px;border:1px solid var(--line);
+    background:rgba(0,0,0,.18);color:#fff;outline:none;font-size:16px
+  }
+  input[type=text]::placeholder{color:rgba(255,255,255,.55)}
+  .upload{
+    position:relative;border:2px dashed rgba(255,255,255,.42);
+    border-radius:24px;padding:28px 18px;text-align:center;
+    background:rgba(0,0,0,.12);cursor:pointer;transition:.2s
+  }
+  .upload:hover{background:rgba(255,255,255,.08);transform:translateY(-1px)}
+  .upload input{position:absolute;inset:0;opacity:0;cursor:pointer}
+  .upload .big{font-size:42px}
+  .upload strong{display:block;font-size:18px;margin-top:5px}
+  .upload small{color:var(--muted)}
+  .preview{
+    margin-top:16px;display:none;gap:16px;align-items:center;
+    padding:14px;border-radius:22px;background:rgba(0,0,0,.16)
+  }
+  .preview img{width:92px;height:92px;object-fit:contain;border-radius:18px;background:#111}
+  .meta{min-width:0}.meta b{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .meta span{display:block;color:var(--muted);font-size:13px;margin-top:4px}
+  .actions{display:flex;gap:12px;flex-wrap:wrap;margin-top:18px}
+  button{
+    flex:1;min-width:180px;border:0;border-radius:18px;padding:15px 18px;
+    font-weight:900;font-size:16px;cursor:pointer;color:#24132e;
+    background:linear-gradient(135deg,#fef08a,#fff);
+    box-shadow:0 10px 25px rgba(0,0,0,.16);transition:.2s
+  }
+  button:hover:not(:disabled){transform:translateY(-2px);box-shadow:0 14px 30px rgba(0,0,0,.20)}
+  button:disabled{opacity:.45;cursor:not-allowed;transform:none}
+  #downloadBtn{background:linear-gradient(135deg,#86efac,#67e8f9)}
+  .progressBox{display:none;margin-top:20px}
+  .barOuter{height:17px;border-radius:99px;background:rgba(0,0,0,.22);overflow:hidden}
+  .bar{height:100%;width:0;background:linear-gradient(90deg,#fef08a,#86efac,#67e8f9);border-radius:99px;transition:width .12s}
+  .status{display:flex;justify-content:space-between;gap:10px;margin-top:8px;font-size:13px;color:var(--muted)}
+  .success{
+    display:none;margin-top:16px;padding:14px 16px;border-radius:18px;
+    background:rgba(134,239,172,.17);border:1px solid rgba(134,239,172,.35);font-weight:800
+  }
+  .info{color:var(--muted);font-size:13px;line-height:1.55;margin:14px 3px 0}
+  footer{text-align:center;color:rgba(255,255,255,.72);font-size:13px;margin-top:20px}
+  .tiny{font-size:12px;color:var(--muted);margin-top:7px}
+  @media(max-width:560px){
+    .wrap{width:94%;padding-top:14px}.card{padding:17px;border-radius:26px}
+    .preview img{width:76px;height:76px}
+    button{min-width:100%;}.actions{gap:9px}
+  }
+</style>
+</head>
+<body>
+<div class="bubble b1"></div><div class="bubble b2"></div><div class="bubble b3"></div>
+
+<div class="wrap">
+  <header>
+    <div class="logo">✨</div>
+    <h1>Animated Totem Creator</h1>
+    <p>🎮 Create your Minecraft Bedrock animated Totem pack</p>
+  </header>
+
+  <main class="card">
+    <label for="packName">📦 Pack Name</label>
+    <input id="packName" type="text" placeholder="Example: My Animated Totem" maxlength="60">
+
+    <div style="height:16px"></div>
+
+    <label>🎞️ Upload GIF</label>
+    <div class="upload" id="uploadArea">
+      <input id="gifInput" type="file" accept=".gif,image/gif">
+      <div class="big">🖼️</div>
+      <strong>Choose an animated GIF</strong>
+      <small>Maximum file size: 50 MB • GIF only</small>
+    </div>
+
+    <div class="preview" id="preview">
+      <img id="previewImg" alt="GIF preview">
+      <div class="meta">
+        <b id="fileName">—</b>
+        <span id="fileInfo">—</span>
+        <div class="tiny">✅ Ready to generate</div>
+      </div>
+    </div>
+
+    <div class="actions">
+      <button id="generateBtn" disabled>🚀 Generate Pack</button>
+      <button id="downloadBtn" disabled>⬇️ Download .mcpack</button>
+    </div>
+
+    <div class="progressBox" id="progressBox">
+      <div class="barOuter"><div class="bar" id="bar"></div></div>
+      <div class="status"><span id="statusText">Preparing...</span><span id="percent">0%</span></div>
+    </div>
+
+    <div class="success" id="success">🎉 Pack generated successfully! Your download button is ready.</div>
+
+    <p class="info">
+      💚 The generated pack description always includes:
+      <b>Animated Totem pack Create by Tamilcrafters studio</b><br>
+      🧩 GIF frames are decoded one-by-one and placed into the Bedrock resource pack.
+      The generator runs in your browser; the GIF is not uploaded to a server.
+    </p>
+  </main>
+
+  <footer>✨ Animated Totem Creator • Tamilcrafters Studio</footer>
+</div>
+
+<!-- Browser-side libraries. GitHub Pages can load these normally over HTTPS. -->
+<script src="https://cdn.jsdelivr.net/npm/gifuct-js@2.1.2/dist/gifuct.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
+
+<script>
+const GEOMETRY = "{\"format_version\":\"1.16.0\",\"minecraft:geometry\":[{\"description\":{\"identifier\":\"geometry.vm\",\"texture_width\":32,\"texture_height\":32,\"visible_bounds_width\":15,\"visible_bounds_height\":5,\"visible_bounds_offset\":[0,0.5,0]},\"bones\":[{\"name\":\"leftitem\",\"pivot\":[0,0,0],\"cubes\":[{\"origin\":[2,0,0],\"size\":[0,2,2],\"uv\":{\"north\":{\"uv\":[11,11],\"uv_size\":[2,2]},\"east\":{\"uv\":[32,32],\"uv_size\":[-1,-1]},\"south\":{\"uv\":[9,11],\"uv_size\":[2,2]},\"west\":{\"uv\":[0,0],\"uv_size\":[32,32]},\"up\":{\"uv\":[20,12],\"uv_size\":[-2,-12]},\"down\":{\"uv\":[22,12],\"uv_size\":[-2,-12]}}},{\"origin\":[2.01,0,0],\"size\":[0,2,2],\"uv\":{\"north\":{\"uv\":[11,11],\"uv_size\":[2,2]},\"east\":{\"uv\":[32,32],\"uv_size\":[-1,-1]},\"south\":{\"uv\":[9,11],\"uv_size\":[2,2]},\"west\":{\"uv\":[0,0],\"uv_size\":[32,32]},\"up\":{\"uv\":[20,12],\"uv_size\":[-2,-12]},\"down\":{\"uv\":[22,12],\"uv_size\":[-2,-12]}}},{\"origin\":[2.02,0,0],\"size\":[0,2,2],\"uv\":{\"north\":{\"uv\":[11,11],\"uv_size\":[2,2]},\"east\":{\"uv\":[32,32],\"uv_size\":[-1,-1]},\"south\":{\"uv\":[9,11],\"uv_size\":[2,2]},\"west\":{\"uv\":[0,0],\"uv_size\":[32,32]},\"up\":{\"uv\":[20,12],\"uv_size\":[-2,-12]},\"down\":{\"uv\":[22,12],\"uv_size\":[-2,-12]}}},{\"origin\":[2.03,0,0],\"size\":[0,2,2],\"uv\":{\"north\":{\"uv\":[11,11],\"uv_size\":[2,2]},\"east\":{\"uv\":[32,32],\"uv_size\":[-1,-1]},\"south\":{\"uv\":[9,11],\"uv_size\":[2,2]},\"west\":{\"uv\":[0,0],\"uv_size\":[32,32]},\"up\":{\"uv\":[20,12],\"uv_size\":[-2,-12]},\"down\":{\"uv\":[22,12],\"uv_size\":[-2,-12]}}},{\"origin\":[2.04,0,0],\"size\":[0,2,2],\"uv\":{\"north\":{\"uv\":[11,11],\"uv_size\":[2,2]},\"east\":{\"uv\":[32,32],\"uv_size\":[-1,-1]},\"south\":{\"uv\":[9,11],\"uv_size\":[2,2]},\"west\":{\"uv\":[0,0],\"uv_size\":[32,32]},\"up\":{\"uv\":[20,12],\"uv_size\":[-2,-12]},\"down\":{\"uv\":[22,12],\"uv_size\":[-2,-12]}}},{\"origin\":[2.05,0,0],\"size\":[0,2,2],\"uv\":{\"north\":{\"uv\":[11,11],\"uv_size\":[2,2]},\"east\":{\"uv\":[32,32],\"uv_size\":[-1,-1]},\"south\":{\"uv\":[9,11],\"uv_size\":[2,2]},\"west\":{\"uv\":[0,0],\"uv_size\":[32,32]},\"up\":{\"uv\":[20,12],\"uv_size\":[-2,-12]},\"down\":{\"uv\":[22,12],\"uv_size\":[-2,-12]}}},{\"origin\":[2.06,0,0],\"size\":[0,2,2],\"uv\":{\"north\":{\"uv\":[11,11],\"uv_size\":[2,2]},\"east\":{\"uv\":[32,32],\"uv_size\":[-1,-1]},\"south\":{\"uv\":[9,11],\"uv_size\":[2,2]},\"west\":{\"uv\":[0,0],\"uv_size\":[32,32]},\"up\":{\"uv\":[20,12],\"uv_size\":[-2,-12]},\"down\":{\"uv\":[22,12],\"uv_size\":[-2,-12]}}},{\"origin\":[2.07,0,0],\"size\":[0,2,2],\"uv\":{\"north\":{\"uv\":[11,11],\"uv_size\":[2,2]},\"east\":{\"uv\":[32,32],\"uv_size\":[-1,-1]},\"south\":{\"uv\":[9,11],\"uv_size\":[2,2]},\"west\":{\"uv\":[0,0],\"uv_size\":[32,32]},\"up\":{\"uv\":[20,12],\"uv_size\":[-2,-12]},\"down\":{\"uv\":[22,12],\"uv_size\":[-2,-12]}}},{\"origin\":[2.08,0,0],\"size\":[0,2,2],\"uv\":{\"north\":{\"uv\":[11,11],\"uv_size\":[2,2]},\"east\":{\"uv\":[32,32],\"uv_size\":[-1,-1]},\"south\":{\"uv\":[9,11],\"uv_size\":[2,2]},\"west\":{\"uv\":[0,0],\"uv_size\":[32,32]},\"up\":{\"uv\":[20,12],\"uv_size\":[-2,-12]},\"down\":{\"uv\":[22,12],\"uv_size\":[-2,-12]}}},{\"origin\":[2.09,0,0],\"size\":[0,2,2],\"uv\":{\"north\":{\"uv\":[11,11],\"uv_size\":[2,2]},\"east\":{\"uv\":[32,32],\"uv_size\":[-1,-1]},\"south\":{\"uv\":[9,11],\"uv_size\":[2,2]},\"west\":{\"uv\":[0,0],\"uv_size\":[32,32]},\"up\":{\"uv\":[20,12],\"uv_size\":[-2,-12]},\"down\":{\"uv\":[22,12],\"uv_size\":[-2,-12]}}},{\"origin\":[2.1,0,0],\"size\":[0,2,2],\"uv\":{\"north\":{\"uv\":[11,11],\"uv_size\":[2,2]},\"east\":{\"uv\":[32,32],\"uv_size\":[-1,-1]},\"south\":{\"uv\":[9,11],\"uv_size\":[2,2]},\"west\":{\"uv\":[0,0],\"uv_size\":[32,32]},\"up\":{\"uv\":[20,12],\"uv_size\":[-2,-12]},\"down\":{\"uv\":[22,12],\"uv_size\":[-2,-12]}}}]}]}]}";
+const BASE_ANIMATION = "{\"format_version\":\"1.10.0\",\"animations\":{\"animation.leftblock.first_person_wield\":{\"loop\":true,\"bones\":{\"leftitem\":{\"rotation\":[\"c.is_first_person?-15.0:100.0\",\"c.is_first_person?30.0:20.0\",\"c.is_first_person?4.0:80.0\"],\"position\":[\"c.is_first_person?-23.0:-6.2\",\"c.is_first_person?6.8:7.0\",\"c.is_first_person?11.0:4.0\"],\"scale\":[\"c.is_first_person?3.2:5\",\"c.is_first_person?3.2:5\",\"c.is_first_person?3.2:5\"]}}}}}";
+
+const input = document.getElementById('gifInput');
+const nameInput = document.getElementById('packName');
+const generateBtn = document.getElementById('generateBtn');
+const downloadBtn = document.getElementById('downloadBtn');
+const preview = document.getElementById('preview');
+const previewImg = document.getElementById('previewImg');
+const fileNameEl = document.getElementById('fileName');
+const fileInfo = document.getElementById('fileInfo');
+const progressBox = document.getElementById('progressBox');
+const bar = document.getElementById('bar');
+const percent = document.getElementById('percent');
+const statusText = document.getElementById('statusText');
+const success = document.getElementById('success');
+
+let selectedFile = null;
+let generatedBlob = null;
+
+function safeName(s){
+  return (s || 'Animated Totem')
+    .replace(/[^a-zA-Z0-9 _-]/g,'')
+    .trim().replace(/\s+/g,'-').slice(0,48) || 'Animated-Totem';
+}
+function uuid(){
+  if (crypto.randomUUID) return crypto.randomUUID();
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g,c=>{
+    const r=Math.random()*16|0, v=c==='x'?r:(r&3|8); return v.toString(16);
+  });
+}
+function setProgress(v, text){
+  v=Math.max(0,Math.min(100,v));
+  bar.style.width=v+'%'; percent.textContent=Math.round(v)+'%';
+  statusText.textContent=text;
+}
+function canvasToBlob(canvas){
+  return new Promise((resolve,reject)=>canvas.toBlob(b=>b?resolve(b):reject(new Error('PNG conversion failed')),'image/png'));
+}
+function rgbaPatchToCanvas(frame, width, height){
+  const canvas=document.createElement('canvas');
+  canvas.width=width; canvas.height=height;
+  const ctx=canvas.getContext('2d');
+  const image=ctx.createImageData(width,height);
+  const patch=frame.patch;
+  const dims=frame.dims;
+  for(let y=0;y<dims.height;y++){
+    for(let x=0;x<dims.width;x++){
+      const si=(y*dims.width+x)*4;
+      const dx=dims.left+x, dy=dims.top+y;
+      if(dx<0||dy<0||dx>=width||dy>=height) continue;
+      const di=(dy*width+dx)*4;
+      image.data[di]=patch[si];
+      image.data[di+1]=patch[si+1];
+      image.data[di+2]=patch[si+2];
+      image.data[di+3]=patch[si+3];
+    }
+  }
+  ctx.putImageData(image,0,0);
+  return canvas;
+}
+function patchIntoCanvas(frame, canvas){
+  const ctx=canvas.getContext('2d');
+  const image=ctx.createImageData(frame.dims.width,frame.dims.height);
+  image.data.set(frame.patch);
+  ctx.putImageData(image,frame.dims.left,frame.dims.top);
+}
+function disposeFrame(frame, canvas){
+  // gifuct-js gives disposal type in frame.disposalType. We handle common
+  // GIF disposal modes to reconstruct the full canvas.
+  const ctx=canvas.getContext('2d');
+  if(frame.disposalType===2){
+    ctx.clearRect(frame.dims.left,frame.dims.top,frame.dims.width,frame.dims.height);
+  }
+}
+
+async function decodeGif(file){
+  const buffer=await file.arrayBuffer();
+  const gif=parseGIF(buffer);
+  const raw=decompressFrames(gif,true);
+  if(!raw.length) throw new Error('No GIF frames found.');
+  const width=gif.lsd.width, height=gif.lsd.height;
+  const canvas=document.createElement('canvas'); canvas.width=width; canvas.height=height;
+  const ctx=canvas.getContext('2d');
+  ctx.clearRect(0,0,width,height);
+  const frames=[];
+  for(let i=0;i<raw.length;i++){
+    const f=raw[i];
+    // Save previous canvas for disposal=3.
+    let saved=null;
+    if(f.disposalType===3) saved=ctx.getImageData(0,0,width,height);
+    patchIntoCanvas(f,canvas);
+    const copy=document.createElement('canvas'); copy.width=width; copy.height=height;
+    copy.getContext('2d').drawImage(canvas,0,0);
+    frames.push({canvas:copy, delay:Math.max(20,(f.delay||100))});
+    if(f.disposalType===2) ctx.clearRect(f.dims.left,f.dims.top,f.dims.width,f.dims.height);
+    else if(f.disposalType===3 && saved) ctx.putImageData(saved,0,0);
+  }
+  return {width,height,frames};
+}
+
+function buildRenderController(frameCount){
+  const names=[];
+  for(let i=1;i<=frameCount;i++) names.push(`"texture.item_frame_${i}"`);
+  // Fixed 10 FPS, matching a clean Minecraft-style animation. Modifying the
+  // life_time multiplier here changes speed without changing frame images.
+  return {
+    format_version:"1.10",
+    render_controllers:{
+      "controller.render.item_animation_totem":{
+        arrays:{textures:{"array.item_frames":names}},
+        geometry:"Geometry.default",
+        materials:[{"*":"variable.is_enchanted ? material.enchanted : material.default"}],
+        textures:[
+          `temp.life_time = query.life_time * 10; return array.item_frames[math.floor(temp.life_time) % ${frameCount}];`,
+          "texture.enchanted"
+        ]
+      }
+    }
+  };
+}
+
+async function generatePack(){
+  if(!selectedFile) return;
+  if(selectedFile.size > 50*1024*1024){
+    alert('GIF is larger than 50 MB. Please choose a smaller GIF.');
+    return;
+  }
+  generateBtn.disabled=true; downloadBtn.disabled=true; success.style.display='none';
+  progressBox.style.display='block'; setProgress(2,'Reading GIF...');
+
+  try{
+    const decoded=await decodeGif(selectedFile);
+    if(decoded.frames.length>512){
+      throw new Error('This GIF has more than 512 frames. Please use a shorter/simpler GIF.');
+    }
+    setProgress(10,`Decoded ${decoded.frames.length} frames • ${decoded.width}×${decoded.height}`);
+
+    const zip=new JSZip();
+    const root='Animated-Totem-Resource-Pack';
+    const pname=safeName(nameInput.value || 'Animated Totem');
+    const description='Animated Totem pack Create by Tamilcrafters studio';
+
+    const headerUUID=uuid(), moduleUUID=uuid();
+    const manifest={
+      format_version:2,
+      header:{
+        description:description,
+        name:pname,
+        uuid:headerUUID,
+        version:[1,0,0],
+        min_engine_version:[1,21,0]
+      },
+      modules:[{
+        description:'Animated Totem Resource Pack',
+        type:'resources',
+        uuid:moduleUUID,
+        version:[1,0,0]
+      }]
+    };
+
+    zip.file(`${root}/manifest.json`,JSON.stringify(manifest,null,2));
+    zip.file(`${root}/models/entity/vm.geo.json`,GEOMETRY);
+    zip.file(`${root}/animations/vleftblock.animation.json`,BASE_ANIMATION);
+
+    const attachable={
+      format_version:"1.10.0",
+      "minecraft:attachable":{
+        description:{
+          identifier:"minecraft:totem_of_undying",
+          materials:{default:"entity_alphatest",enchanted:"entity_alphatest_glint"},
+          textures:{},
+          geometry:{default:"geometry.vm"},
+          animations:{wield:"animation.leftblock.first_person_wield"},
+          scripts:{animate:["wield"]},
+          render_controllers:["controller.render.item_animation_totem"]
+        }
+      }
+    };
+    for(let i=1;i<=decoded.frames.length;i++){
+      attachable["minecraft:attachable"].description.textures[`item_frame_${i}`]=`textures/item/item${i}`;
+    }
+    attachable["minecraft:attachable"].description.textures.enchanted="textures/misc/enchanted_item_glint";
+    zip.file(`${root}/attachables/totem.json`,JSON.stringify(attachable,null,2));
+    zip.file(`${root}/render_controllers/item_animation.render_controllers.json`,
+      JSON.stringify(buildRenderController(decoded.frames.length),null,2));
+
+    // Use the first frame as the standard item texture and pack icon.
+    const firstBlob=await canvasToBlob(decoded.frames[0].canvas);
+    zip.file(`${root}/textures/items/totem.png`,firstBlob);
+    zip.file(`${root}/pack_icon.png`,firstBlob);
+
+    for(let i=0;i<decoded.frames.length;i++){
+      const blob=await canvasToBlob(decoded.frames[i].canvas);
+      zip.file(`${root}/textures/item/item${i+1}.png`,blob);
+      setProgress(10 + ((i+1)/decoded.frames.length)*82,`Building frame ${i+1} of ${decoded.frames.length}...`);
+      // Yield to the browser so the progress bar visibly updates.
+      if(i%3===0) await new Promise(r=>setTimeout(r,0));
+    }
+
+    setProgress(94,'Creating .mcpack file...');
+    generatedBlob=await zip.generateAsync(
+      {type:'blob',mimeType:'application/octet-stream',compression:'DEFLATE',compressionOptions:{level:6}},
+      meta=>setProgress(94+meta.percent*0.06,'Packing resource pack...')
+    );
+
+    setProgress(100,'Done! ✨');
+    success.style.display='block';
+    downloadBtn.disabled=false;
+  }catch(err){
+    console.error(err);
+    alert('Could not generate the pack: '+err.message);
+    setProgress(0,'Generation failed');
+  }finally{
+    generateBtn.disabled=!selectedFile;
+  }
+}
+
+input.addEventListener('change',()=>{
+  const file=input.files[0];
+  generatedBlob=null; downloadBtn.disabled=true; success.style.display='none';
+  if(!file) return;
+  if(file.type!=='image/gif' && !/\.gif$/i.test(file.name)){
+    alert('Please select a GIF file.');
+    input.value=''; return;
+  }
+  if(file.size>50*1024*1024){
+    alert('Maximum GIF size is 50 MB.');
+    input.value=''; return;
+  }
+  selectedFile=file;
+  preview.style.display='flex';
+  previewImg.src=URL.createObjectURL(file);
+  fileNameEl.textContent=file.name;
+  fileInfo.textContent=(file.size/1024/1024).toFixed(2)+' MB • GIF';
+  generateBtn.disabled=false;
+});
+generateBtn.addEventListener('click',generatePack);
+downloadBtn.addEventListener('click',()=>{
+  if(!generatedBlob) return;
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(generatedBlob);
+  a.download=safeName(nameInput.value || 'Animated Totem')+'.mcpack';
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(()=>URL.revokeObjectURL(a.href),1000);
+});
+</script>
+</body>
+</html>
